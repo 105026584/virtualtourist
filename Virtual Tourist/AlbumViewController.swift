@@ -10,12 +10,17 @@ import UIKit
 import MapKit
 import CoreData
 
-class AlbumViewController: UIViewController, NSFetchedResultsControllerDelegate, UICollectionViewDelegate {
+class AlbumViewController: UIViewController, UICollectionViewDelegate {
 
     var pin: Pin!
     var mapLocation: MapLocation!
     var isDeleteMode: Bool = false
     var imagesToDelete = [String]()
+    var newPin: Bool = false
+    
+    var insertedIndexPaths: [NSIndexPath]!
+    var deletedIndexPaths : [NSIndexPath]!
+    var updatedIndexPaths : [NSIndexPath]!
     
     struct bottomButtonContent {
         static let NewCollection: String = "Load new Collection"
@@ -25,6 +30,7 @@ class AlbumViewController: UIViewController, NSFetchedResultsControllerDelegate,
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var photoCollection: UICollectionView!
     @IBOutlet weak var bottomButton: UIButton!
+    @IBOutlet weak var noImagesLabel: UILabel!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -41,6 +47,7 @@ class AlbumViewController: UIViewController, NSFetchedResultsControllerDelegate,
         mapView.userInteractionEnabled = false
         mapView.setCenterCoordinate(pin.coordinate, animated: true)
         
+        // fetch photos
         do {
             try fetchedResultsController.performFetch()
         } catch let error as NSError {
@@ -49,12 +56,13 @@ class AlbumViewController: UIViewController, NSFetchedResultsControllerDelegate,
             self.presentViewController(errorMessage, animated: true, completion: nil)
         }
         
-        if pin.photos.isEmpty {
-            //no photos yet, get some ( = new pin )
+        bottomButton.setTitle( bottomButtonContent.NewCollection, forState: .Normal )
+        bottomButton.enabled = false
+        
+        if pin.photos!.isEmpty || newPin == true {
+            //no photos yet, get some ( check on new pin )
             getImageSet()
         } else {
-            bottomButton.titleLabel?.text = bottomButtonContent.NewCollection
-            bottomButton.titleLabel?.tintColor = UIColor.redColor()
             bottomButton.enabled = true
         }
 
@@ -81,12 +89,11 @@ class AlbumViewController: UIViewController, NSFetchedResultsControllerDelegate,
     func getImageSet() {
         FlickRClient().searchPhotosByLocation(pin.getBoundingBoxString(), requiredPhotosCount: 21) { result, error in
             if let images = result {
-                dispatch_async(dispatch_get_main_queue()) {
-                    for a in images {
-                        let photo = Photo(dictionary: [Photo.Keys.Name: a[0], Photo.Keys.Path: a[1]], context: self.sharedContext)
-                        photo.pin = self.pin
+                for a in images {
+                    dispatch_async(dispatch_get_main_queue()) {
+                        _ = Photo(dictionary: [Photo.Keys.Name: a[0], Photo.Keys.Path: a[1], Photo.Keys.Pin: self.pin], context: self.sharedContext)
+                        CoreDataStackManager.sharedInstance().saveContext()
                     }
-                    CoreDataStackManager.sharedInstance().saveContext()
                 }
             }
         }
@@ -106,7 +113,7 @@ class AlbumViewController: UIViewController, NSFetchedResultsControllerDelegate,
     // MARK: - Fetched Results Controller Delegate
     
     // Step 4: This would be a great place to add the delegate methods
-
+/*
     func controller(controller: NSFetchedResultsController,
         didChangeSection sectionInfo: NSFetchedResultsSectionInfo,
         atIndex sectionIndex: Int,
@@ -123,7 +130,7 @@ class AlbumViewController: UIViewController, NSFetchedResultsControllerDelegate,
                 return
         }
     }
-    
+*/
     //
     // This is the most interesting method. Take particular note of way the that newIndexPath
     // parameter gets unwrapped and put into an array literal: [newIndexPath!]
@@ -201,8 +208,7 @@ class AlbumViewController: UIViewController, NSFetchedResultsControllerDelegate,
     
     
     func collectionView(collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAtIndexPath indexPath: NSIndexPath) -> CGSize {
-        let spaces = CGFloat(2 * 3)
-        let width = (collectionView.bounds.width - (5.0 * spaces)) / CGFloat(3)
+        let width = (collectionView.bounds.width - (5.0 * CGFloat(6))) / CGFloat(3)
         return CGSize(width: width, height: width)
     }
     
@@ -254,21 +260,22 @@ class AlbumViewController: UIViewController, NSFetchedResultsControllerDelegate,
     @IBAction func bottomButtonPress(sender: UIButton) {
         
         if sender.titleLabel?.text == bottomButtonContent.NewCollection {
-            for photo in self.pin.photos {
+            bottomButton.enabled = false
+            for photo in fetchedResultsController.fetchedObjects as! [Photo] {
                 sharedContext.deleteObject(photo)
             }
-            photoCollection.reloadData()
+            CoreDataStackManager.sharedInstance().saveContext()
             getImageSet()
         } else if sender.titleLabel?.text == bottomButtonContent.DeleteSelected {
-            for var index:Int = 0 ; index < imagesToDelete.count ;index++ {
-                for photo in self.pin.photos {
-                    if imagesToDelete[index] == photo.name {
-                        sharedContext.deleteObject(photo)
-                    }
+            for photo in fetchedResultsController.fetchedObjects as! [Photo] {
+                if imagesToDelete.contains(photo.imageIdentifier) {
+                    sharedContext.deleteObject(photo)
                 }
             }
+            imagesToDelete = [String]()
+            
+            CoreDataStackManager.sharedInstance().saveContext()
             setNewCollectionButton()
-            photoCollection.reloadData()
         }
     }
     
@@ -276,20 +283,27 @@ class AlbumViewController: UIViewController, NSFetchedResultsControllerDelegate,
     // MARK: - Configure Cell --> adapted from tableViewCell to collectionViewCell
     
     func configureCell(cell: AlbumCollectionViewCell, photo: Photo) {
-        var currentImage = UIImage(named: "posterPlaceHoldr")
+        var currentImage = UIImage(named: "noImage")
         
         cell.image.image = nil
-        cell.loadIndicator.startAnimating()
+        
+        //print(String(cell.image.layer.opacity))
+        if imagesToDelete.contains(photo.imageIdentifier) {
+            print("marked for deletion set proper opacity == 0.4")
+            cell.image.layer.opacity = 0.4
+        } else {
+            cell.image.layer.opacity = 1
+        }
         
         if photo.path == nil || photo.path == "" {
             currentImage = UIImage(named: "noImage")
         } else if photo.image != nil {
             currentImage = photo.image
-            currentImage?.accessibilityIdentifier = photo.name
+            currentImage?.accessibilityIdentifier = photo.imageIdentifier
         }
             
-        else { // This is the interesting case. The movie has an image name, but it is not downloaded yet.
-            
+        else { // This is the interesting case. has an image name, but it is not downloaded yet.
+            cell.loadIndicator.startAnimating()
             // Start the task that will eventually download the image
             let task = FlickRClient.sharedInstance().taskForImage(photo.path!) { data, error in
                 
@@ -298,7 +312,7 @@ class AlbumViewController: UIViewController, NSFetchedResultsControllerDelegate,
                 }
                 
                 if let data = data {
-                    // Craete the image
+                    // Create the image
                     let image = UIImage(data: data)
                     
                     // update the model, so that the infrmation gets cashed
@@ -307,8 +321,8 @@ class AlbumViewController: UIViewController, NSFetchedResultsControllerDelegate,
                     // update the cell later, on the main thread
                     dispatch_async(dispatch_get_main_queue()) {
                         cell.image.image = image
+                        cell.image.image!.accessibilityIdentifier = photo.imageIdentifier
                         cell.loadIndicator.stopAnimating()
-                        cell.image.image?.accessibilityIdentifier = photo.name
                     }
                 }
             }
@@ -320,4 +334,59 @@ class AlbumViewController: UIViewController, NSFetchedResultsControllerDelegate,
         cell.image.image = currentImage
     }
     
+}
+
+
+
+//MARK: - NSFetchedResultsControllerDelegate 
+
+extension AlbumViewController: NSFetchedResultsControllerDelegate {
+    
+    func controllerWillChangeContent(controller: NSFetchedResultsController) {
+        
+        //Prepare for changed content from Core Data
+        insertedIndexPaths = [NSIndexPath]()
+        deletedIndexPaths  = [NSIndexPath]()
+        updatedIndexPaths  = [NSIndexPath]()
+    }
+    
+    func controller(controller: NSFetchedResultsController, didChangeObject anObject: AnyObject, atIndexPath indexPath: NSIndexPath?, forChangeType type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath?) {
+        
+        switch type {
+        case .Insert:
+            insertedIndexPaths.append(newIndexPath!)
+            
+        case .Delete:
+            deletedIndexPaths.append(indexPath!)
+            
+        case .Update:
+            updatedIndexPaths.append(indexPath!)
+            
+        default:
+            break
+        }
+    }
+    
+    func controllerDidChangeContent(controller: NSFetchedResultsController) {
+        
+        noImagesLabel.hidden = controller.fetchedObjects?.count > 0
+        bottomButton.enabled = controller.fetchedObjects?.count > 0
+
+        //Make the relevant updates to the collectionView once Core Data has finished its changes.
+        photoCollection.performBatchUpdates({
+            
+            for indexPath in self.insertedIndexPaths {
+                self.photoCollection.insertItemsAtIndexPaths([indexPath])
+            }
+            
+            for indexPath in self.deletedIndexPaths {
+                self.photoCollection.deleteItemsAtIndexPaths([indexPath])
+            }
+            
+            for indexPath in self.updatedIndexPaths {
+                self.photoCollection.reloadItemsAtIndexPaths([indexPath])
+            }
+            
+            }, completion: nil)
+    }
 }

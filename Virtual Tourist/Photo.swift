@@ -17,6 +17,7 @@ class Photo: NSManagedObject {
     struct Keys {
         static let Name = "name"
         static let Path = "path"
+        static let Pin = "pin"
     }
     
     struct statics {
@@ -26,7 +27,7 @@ class Photo: NSManagedObject {
     @NSManaged var name: String
     @NSManaged var path: String?
     //@NSManaged var imageData: NSData // TODO << better to store in CoreData or in fileSystem, do some research !
-    @NSManaged var pin : Pin?
+    @NSManaged var pin : Pin
     
     override init(entity: NSEntityDescription, insertIntoManagedObjectContext context: NSManagedObjectContext?) {
         super.init(entity: entity, insertIntoManagedObjectContext: context)
@@ -34,11 +35,15 @@ class Photo: NSManagedObject {
     
     init(dictionary: [String : AnyObject], context: NSManagedObjectContext) {
         // Core Data
-        let entity =  NSEntityDescription.entityForName("Photo", inManagedObjectContext: context)!
+        let entity =  NSEntityDescription.entityForName(statics.entityName, inManagedObjectContext: context)!
         super.init(entity: entity, insertIntoManagedObjectContext: context)
         // Dictionary
         name = dictionary[Keys.Name] as! String
         path = dictionary[Keys.Path] as! String
+        
+        if dictionary[Keys.Pin] != nil {
+            pin = dictionary[Keys.Pin] as! Pin
+        }
     }
     
     var imageIdentifier: String {
@@ -53,7 +58,8 @@ class Photo: NSManagedObject {
             //return UIImage(data:imageData)
         }
         set {
-            FlickRClient.Caches.imageCache.storeImage(image, withIdentifier: imageIdentifier)
+            FlickRClient.Caches.imageCache.storeImage(newValue, withIdentifier: imageIdentifier)
+            print("Image at URL " + self.path! + " stored as " + self.imageIdentifier)
             //imageData = UIImagePNGRepresentation(image!)!
         }
     }

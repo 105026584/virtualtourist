@@ -30,12 +30,19 @@ class Pin: NSManagedObject, MKAnnotation {
     }
     
     var coordinate: CLLocationCoordinate2D {
-        return CLLocationCoordinate2D(latitude: Double(latitude), longitude: Double(longitude))
+        set {
+            self.latitude = newValue.latitude
+            self.longitude = newValue.longitude
+        }
+        
+        get {
+            return CLLocationCoordinate2D(latitude: Double(latitude), longitude: Double(longitude))
+        }
     }
     
     @NSManaged var latitude: NSNumber
     @NSManaged var longitude: NSNumber
-    @NSManaged var photos: [Photo]
+    @NSManaged var photos: [Photo]?
     
     override init(entity: NSEntityDescription, insertIntoManagedObjectContext context: NSManagedObjectContext?) {
         super.init(entity: entity, insertIntoManagedObjectContext: context)
@@ -48,6 +55,14 @@ class Pin: NSManagedObject, MKAnnotation {
         // Dictionary
         latitude = dictionary[Keys.Latitude] as! NSNumber
         longitude = dictionary[Keys.Longitude] as! NSNumber
+    }
+    
+    //overloaded init method to receive coordinates in different way
+    init(coordinate: CLLocationCoordinate2D, context: NSManagedObjectContext) {
+        // Core Data
+        let entity =  NSEntityDescription.entityForName(statics.entityName, inManagedObjectContext: context)!
+        super.init(entity: entity, insertIntoManagedObjectContext: context)
+        self.coordinate = coordinate
     }
     
     func getBoundingBoxString() -> String {

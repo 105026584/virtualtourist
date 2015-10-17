@@ -13,8 +13,11 @@ import CoreData
 class MapViewController: UIViewController, NSFetchedResultsControllerDelegate, MKMapViewDelegate {
 
     var pins = [Pin]()
-
+    var droppedPin: Pin? = nil
+    
     @IBOutlet weak var myMap: MKMapView!
+    @IBOutlet weak var editButton: UIBarButtonItem!
+    @IBOutlet weak var deleteInformation: UIView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -37,8 +40,6 @@ class MapViewController: UIViewController, NSFetchedResultsControllerDelegate, M
         
         myMap.addAnnotations(fetchedResultsControllerPin.fetchedObjects as! [MKAnnotation])
 
-        
-        
         // fetch previous map location
         do {
             try fetchedResultsControllerMapLocation.performFetch()
@@ -50,30 +51,35 @@ class MapViewController: UIViewController, NSFetchedResultsControllerDelegate, M
         // set map Region to stored values, if no mapLocation stored yet, create one
         let mapLocation = fetchedResultsControllerMapLocation.fetchedObjects as! [MapLocation]
         if mapLocation.count > 0 {
-            myMap.setRegion(mapLocation[mapLocation.count-1].region, animated: false)
+            myMap.setRegion(mapLocation.last!.region, animated: true)
         } else {
-            _ = MapLocation(dictionary: [MapLocation.Keys.Latitude: myMap.region.center.latitude, MapLocation.Keys.Longitude: myMap.region.center.longitude, MapLocation.Keys.SpanLatitude: myMap.region.span.latitudeDelta, MapLocation.Keys.SpanLongitude: myMap.region.span.longitudeDelta], context: sharedContext)
+            _ = MapLocation(region: myMap.region, context: sharedContext)
             CoreDataStackManager.sharedInstance().saveContext()
         }
-
-        
+    }
+    @IBAction func editPins(sender: UIBarButtonItem) {
+        if sender.title == "Done" {
+            sender.title = "Edit"
+            deleteInformation.hidden = true
+        } else {
+            sender.title = "Done"
+            deleteInformation.hidden = false
+        }
     }
     
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
-        
     }
     
     var mapLocation: MapLocation {
         let storedLocation = fetchedResultsControllerMapLocation.fetchedObjects as! [MapLocation]
-        return storedLocation[0]
+        return storedLocation.first!
     }
     
     // use this delegated method to react on changes made by standard gestures and store (UPDATE) latest region information in Core Data
     func mapView(mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
-        mapLocation.update([MapLocation.Keys.Latitude: mapView.region.center.latitude, MapLocation.Keys.Longitude: mapView.region.center.longitude, MapLocation.Keys.SpanLatitude: mapView.region.span.latitudeDelta, MapLocation.Keys.SpanLongitude: mapView.region.span.longitudeDelta])
+        mapLocation.region = mapView.region
         CoreDataStackManager.sharedInstance().saveContext()
-
     }
     
     //doing the segue and passing the pin to be able to show on the Album as well as work with the coordinates
@@ -91,22 +97,31 @@ class MapViewController: UIViewController, NSFetchedResultsControllerDelegate, M
         performSegueWithIdentifier("showAlbum", sender: view.annotation)
     }
     
-
-    @IBAction func gesturePressMap(sender: AnyObject) {
-        if sender.state == UIGestureRecognizerState.Began {
+    @IBAction func gesturePressMap(sender: UILongPressGestureRecognizer) {
+        
+        let mapCoordinates: CLLocationCoordinate2D = myMap.convertPoint(sender.locationInView(myMap), toCoordinateFromView: myMap)
+        
+        // Check state of LongPressGesture
+        switch sender.state {
             
-            let fingerTip = myMap.convertPoint( sender.locationInView(myMap), toCoordinateFromView: myMap)
-            _ = Pin(dictionary: [Pin.Keys.Latitude: Double(fingerTip.latitude), Pin.Keys.Longitude: Double(fingerTip.longitude)], context: sharedContext)
+        // Add the pin when LongPressGesture was fired
+        case .Began:
+            droppedPin = Pin(coordinate: mapCoordinates, context: sharedContext)
+            myMap.addAnnotation(droppedPin! as Pin)
+        
+        // This will be executed while moving around
+        case .Changed:
+            droppedPin!.willChangeValueForKey("coordinate")
+            droppedPin!.coordinate = mapCoordinates
+            droppedPin!.didChangeValueForKey("coordinate")
+            
+        // released, we are good to store the pin now
+        case .Ended:
             CoreDataStackManager.sharedInstance().saveContext()
+            performSegueWithIdentifier("showAlbum", sender: droppedPin)
             
-            /*
-            let alertController = UIAlertController(title: nil, message:
-                "Long-Press Gesture Detected", preferredStyle: UIAlertControllerStyle.Alert)
-            alertController.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.Default,handler: nil))
-            
-            self.presentViewController(alertController, animated: true, completion: nil)*/
-            
-            //how to drag pin around till released !?!?!?!?
+        default:
+            return
         }
     }
     
@@ -137,19 +152,20 @@ class MapViewController: UIViewController, NSFetchedResultsControllerDelegate, M
         
     }()
 
-
     func controller(controller: NSFetchedResultsController, didChangeObject anObject: AnyObject, atIndexPath indexPath: NSIndexPath?, forChangeType type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath?) {
         
         if anObject is Pin {
             if type == .Insert {
-                myMap.addAnnotation(anObject as! Pin)
-                performSegueWithIdentifier("showAlbum", sender: anObject)
+                // let this be handled by the LongPressGesture now
+                //myMap.addAnnotation(anObject as! Pin)
+                //performSegueWithIdentifier("showAlbum", sender: anObject)
             } else if type == .Delete {
                 myMap.removeAnnotation(anObject as! Pin)
             } else if type == .Update {
-            // TODO - this may be required to handle proper dragging of pin
+                // no use case at the moment on MapViewController, at the moment
             }
         }
     }
+    
 }
 

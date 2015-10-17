@@ -31,33 +31,43 @@ class MapLocation: NSManagedObject {
     @NSManaged var spanlongitude: NSNumber
     
     var coordinate: CLLocationCoordinate2D {
-        return CLLocationCoordinate2D(latitude: Double(latitude), longitude: Double(longitude))
+        get {
+            return CLLocationCoordinate2D(latitude: Double(latitude), longitude: Double(longitude))
+        }
+        set {
+            latitude = newValue.latitude
+            longitude = newValue.longitude
+        }
     }
     
     var span: MKCoordinateSpan {
-        return MKCoordinateSpanMake(Double(spanlatitude), Double(spanlongitude))
+        get {
+            return MKCoordinateSpan(latitudeDelta: Double(spanlatitude), longitudeDelta: Double(spanlongitude))
+        }
+        set {
+            spanlatitude = newValue.latitudeDelta
+            spanlongitude = newValue.longitudeDelta
+        }
     }
     
     var region: MKCoordinateRegion {
-        return MKCoordinateRegion(center: coordinate, span: span)
+        get {
+            return MKCoordinateRegion(center: coordinate, span: span)
+        }
+        set {
+            coordinate = newValue.center
+            span = newValue.span
+        }
     }
     
     override init(entity: NSEntityDescription, insertIntoManagedObjectContext context: NSManagedObjectContext?) {
         super.init(entity: entity, insertIntoManagedObjectContext: context)
     }
     
-    init(dictionary: [String : AnyObject], context: NSManagedObjectContext) {
+    init(region: MKCoordinateRegion, context: NSManagedObjectContext) {
         // Core Data
         let entity =  NSEntityDescription.entityForName(statics.entityName, inManagedObjectContext: context)!
         super.init(entity: entity, insertIntoManagedObjectContext: context)
-        // Dictionary
-        update(dictionary)
-    }
-    
-    func update(dictionary: [String : AnyObject]) {
-        latitude = dictionary[Keys.Latitude] as! NSNumber
-        longitude = dictionary[Keys.Longitude] as! NSNumber
-        spanlatitude = dictionary[Keys.SpanLatitude] as! NSNumber
-        spanlongitude = dictionary[Keys.SpanLongitude] as! NSNumber
+        self.region = region
     }
 }

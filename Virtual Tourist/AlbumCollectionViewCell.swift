@@ -21,4 +21,12 @@ class AlbumCollectionViewCell: UICollectionViewCell {
             }
         }
     }
+    /*
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        if image.image == nil {
+            loadIndicator.startAnimating()
+        }
+    }
+*/
 }
