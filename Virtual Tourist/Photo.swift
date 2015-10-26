@@ -47,8 +47,7 @@ class Photo: NSManagedObject {
     }
     
     //setting image to nil will remove it
-    override func delete(sender: AnyObject?) {
-        super.delete(sender)
+    override func prepareForDeletion() {
         self.image = nil
     }
     
