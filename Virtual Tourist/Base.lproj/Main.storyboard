@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="8191" systemVersion="14F27" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="8TP-aj-gd3">
     <dependencies>
+        <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="8154"/>
         <capability name="Alignment constraints with different attributes" minToolsVersion="5.1"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
     </dependencies>
     <scenes>
-        <!--Map View Controller-->
+        <!--Virtual Tourist-->
         <scene sceneID="tne-QT-ifu">
             <objects>
                 <viewController id="BYZ-38-t0r" customClass="MapViewController" customModule="Virtual_Tourist" customModuleProvider="target" sceneMemberID="viewController">
@@ -33,9 +34,6 @@
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                                         <nil key="highlightedColor"/>
-                                        <variation key="widthClass=compact" misplaced="YES">
-                                            <rect key="frame" x="104" y="35" width="193" height="21"/>
-                                        </variation>
                                     </label>
                                 </subviews>
                                 <color key="backgroundColor" red="1" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
@@ -82,13 +80,13 @@
                                 <exclude reference="bGR-Pw-hh1"/>
                             </mask>
                             <mask key="constraints">
+                                <exclude reference="J7G-nG-KGq"/>
+                                <exclude reference="gTG-nC-OZ2"/>
                                 <exclude reference="WP8-Cp-sUm"/>
                                 <exclude reference="kVH-b9-9rT"/>
                                 <exclude reference="mOO-Tn-fAT"/>
                                 <exclude reference="3jy-LV-XNR"/>
                                 <exclude reference="zk9-D4-w2K"/>
-                                <exclude reference="J7G-nG-KGq"/>
-                                <exclude reference="gTG-nC-OZ2"/>
                             </mask>
                         </variation>
                         <variation key="widthClass=compact">
@@ -97,17 +95,17 @@
                                 <include reference="bGR-Pw-hh1"/>
                             </mask>
                             <mask key="constraints">
+                                <include reference="J7G-nG-KGq"/>
+                                <include reference="gTG-nC-OZ2"/>
                                 <include reference="WP8-Cp-sUm"/>
                                 <include reference="kVH-b9-9rT"/>
                                 <include reference="mOO-Tn-fAT"/>
                                 <include reference="3jy-LV-XNR"/>
                                 <include reference="zk9-D4-w2K"/>
-                                <include reference="J7G-nG-KGq"/>
-                                <include reference="gTG-nC-OZ2"/>
                             </mask>
                         </variation>
                     </view>
-                    <navigationItem key="navigationItem" id="3fx-j7-2Sv">
+                    <navigationItem key="navigationItem" title="Virtual Tourist" id="3fx-j7-2Sv">
                         <barButtonItem key="rightBarButtonItem" title="Edit" id="rXc-hz-8eA">
                             <connections>
                                 <action selector="editPins:" destination="BYZ-38-t0r" id="qXL-Ai-jXU"/>
@@ -130,7 +128,7 @@
             </objects>
             <point key="canvasLocation" x="421.5" y="337"/>
         </scene>
-        <!--Album View Controller-->
+        <!--Virtual Tourist-->
         <scene sceneID="Chn-1l-nVG">
             <objects>
                 <viewController id="ScC-n4-bL9" customClass="AlbumViewController" customModule="Virtual_Tourist" customModuleProvider="target" sceneMemberID="viewController">
@@ -150,6 +148,9 @@
                                 </constraints>
                                 <state key="normal" title="New Collection">
                                     <color key="titleColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                </state>
+                                <state key="disabled">
+                                    <color key="titleColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
                                 <variation key="default">
                                     <mask key="constraints">
@@ -184,7 +185,7 @@
                             <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="No images found" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hLE-Dp-pvI">
                                 <rect key="frame" x="-42" y="-21" width="42" height="21"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" indicatorStyle="white" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="6lF-aS-N21">
@@ -225,9 +226,6 @@
                                                 </imageView>
                                                 <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" animating="YES" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="hkC-pT-51P">
                                                     <rect key="frame" x="-10" y="-10" width="20" height="20"/>
-                                                    <variation key="widthClass=compact" fixedFrame="YES">
-                                                        <rect key="frame" x="-144" y="-123" width="388" height="347"/>
-                                                    </variation>
                                                 </activityIndicatorView>
                                             </subviews>
                                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
@@ -235,9 +233,15 @@
                                         <color key="backgroundColor" red="0.3031311424" green="0.52191625630000005" blue="0.97377381350000003" alpha="1" colorSpace="calibratedRGB"/>
                                         <constraints>
                                             <constraint firstAttribute="trailing" secondItem="GcG-33-BMl" secondAttribute="trailing" id="1VL-Ad-VoO"/>
+                                            <constraint firstAttribute="trailingMargin" secondItem="hkC-pT-51P" secondAttribute="trailing" id="1tD-GA-8eN"/>
+                                            <constraint firstItem="hkC-pT-51P" firstAttribute="leading" secondItem="tYb-62-tVB" secondAttribute="leadingMargin" id="9bF-dj-4eQ"/>
                                             <constraint firstAttribute="bottom" secondItem="GcG-33-BMl" secondAttribute="bottom" id="JtD-zz-soe"/>
+                                            <constraint firstItem="GcG-33-BMl" firstAttribute="height" secondItem="tYb-62-tVB" secondAttribute="height" id="Kq7-3m-QDc"/>
+                                            <constraint firstAttribute="bottomMargin" secondItem="hkC-pT-51P" secondAttribute="bottom" id="OMU-pz-Veu"/>
+                                            <constraint firstItem="hkC-pT-51P" firstAttribute="top" secondItem="tYb-62-tVB" secondAttribute="topMargin" id="dbG-4p-9ah"/>
                                             <constraint firstItem="GcG-33-BMl" firstAttribute="leading" secondItem="tYb-62-tVB" secondAttribute="leading" id="n4R-X4-4Kq"/>
                                             <constraint firstItem="GcG-33-BMl" firstAttribute="top" secondItem="tYb-62-tVB" secondAttribute="top" id="r5U-1o-Z5c"/>
+                                            <constraint firstItem="GcG-33-BMl" firstAttribute="width" secondItem="tYb-62-tVB" secondAttribute="width" id="vxe-pY-gJ9"/>
                                         </constraints>
                                         <variation key="default">
                                             <mask key="subviews">
@@ -245,10 +249,16 @@
                                                 <exclude reference="hkC-pT-51P"/>
                                             </mask>
                                             <mask key="constraints">
+                                                <exclude reference="1tD-GA-8eN"/>
+                                                <exclude reference="9bF-dj-4eQ"/>
+                                                <exclude reference="OMU-pz-Veu"/>
+                                                <exclude reference="dbG-4p-9ah"/>
                                                 <exclude reference="1VL-Ad-VoO"/>
                                                 <exclude reference="JtD-zz-soe"/>
+                                                <exclude reference="Kq7-3m-QDc"/>
                                                 <exclude reference="n4R-X4-4Kq"/>
                                                 <exclude reference="r5U-1o-Z5c"/>
+                                                <exclude reference="vxe-pY-gJ9"/>
                                             </mask>
                                         </variation>
                                         <variation key="widthClass=compact">
@@ -257,10 +267,16 @@
                                                 <include reference="hkC-pT-51P"/>
                                             </mask>
                                             <mask key="constraints">
+                                                <include reference="1tD-GA-8eN"/>
+                                                <include reference="9bF-dj-4eQ"/>
+                                                <include reference="OMU-pz-Veu"/>
+                                                <include reference="dbG-4p-9ah"/>
                                                 <include reference="1VL-Ad-VoO"/>
                                                 <include reference="JtD-zz-soe"/>
+                                                <include reference="Kq7-3m-QDc"/>
                                                 <include reference="n4R-X4-4Kq"/>
                                                 <include reference="r5U-1o-Z5c"/>
+                                                <include reference="vxe-pY-gJ9"/>
                                             </mask>
                                         </variation>
                                         <connections>
@@ -316,9 +332,10 @@
                                 <exclude reference="6lF-aS-N21"/>
                             </mask>
                             <mask key="constraints">
-                                <exclude reference="Suw-Ld-qc0"/>
-                                <exclude reference="TiA-aP-k2F"/>
-                                <exclude reference="mja-q0-Bdc"/>
+                                <exclude reference="bF3-zD-nHX"/>
+                                <exclude reference="H4C-tp-VEj"/>
+                                <exclude reference="c0C-fj-2wp"/>
+                                <exclude reference="nc9-Sk-y6s"/>
                                 <exclude reference="1rj-PE-PsK"/>
                                 <exclude reference="5IF-uR-iZ9"/>
                                 <exclude reference="DtC-WM-Kbq"/>
@@ -328,10 +345,9 @@
                                 <exclude reference="0Mm-KH-TwV"/>
                                 <exclude reference="Nlc-iB-lQW"/>
                                 <exclude reference="yDR-Rf-dPt"/>
-                                <exclude reference="H4C-tp-VEj"/>
-                                <exclude reference="c0C-fj-2wp"/>
-                                <exclude reference="nc9-Sk-y6s"/>
-                                <exclude reference="bF3-zD-nHX"/>
+                                <exclude reference="Suw-Ld-qc0"/>
+                                <exclude reference="TiA-aP-k2F"/>
+                                <exclude reference="mja-q0-Bdc"/>
                             </mask>
                         </variation>
                         <variation key="widthClass=compact">
@@ -342,9 +358,10 @@
                                 <include reference="6lF-aS-N21"/>
                             </mask>
                             <mask key="constraints">
-                                <include reference="Suw-Ld-qc0"/>
-                                <include reference="TiA-aP-k2F"/>
-                                <include reference="mja-q0-Bdc"/>
+                                <include reference="bF3-zD-nHX"/>
+                                <include reference="H4C-tp-VEj"/>
+                                <include reference="c0C-fj-2wp"/>
+                                <include reference="nc9-Sk-y6s"/>
                                 <include reference="1rj-PE-PsK"/>
                                 <include reference="5IF-uR-iZ9"/>
                                 <include reference="DtC-WM-Kbq"/>
@@ -354,13 +371,15 @@
                                 <include reference="0Mm-KH-TwV"/>
                                 <include reference="Nlc-iB-lQW"/>
                                 <include reference="yDR-Rf-dPt"/>
-                                <include reference="H4C-tp-VEj"/>
-                                <include reference="c0C-fj-2wp"/>
-                                <include reference="nc9-Sk-y6s"/>
-                                <include reference="bF3-zD-nHX"/>
+                                <include reference="Suw-Ld-qc0"/>
+                                <include reference="TiA-aP-k2F"/>
+                                <include reference="mja-q0-Bdc"/>
                             </mask>
                         </variation>
                     </view>
+                    <navigationItem key="navigationItem" title="Virtual Tourist" id="Rb2-Be-3cK">
+                        <barButtonItem key="backBarButtonItem" title="Back" id="c8e-80-K4X"/>
+                    </navigationItem>
                     <connections>
                         <outlet property="bottomButton" destination="k6e-TT-nbl" id="kLf-ix-8oN"/>
                         <outlet property="mapView" destination="XAI-TR-cps" id="Sbe-YD-IRn"/>

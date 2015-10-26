@@ -33,9 +33,7 @@ class MapViewController: UIViewController, NSFetchedResultsControllerDelegate, M
         do {
             try fetchedResultsControllerPin.performFetch()
         } catch let error as NSError {
-            let errorMessage = UIAlertController(title: nil, message: error.localizedDescription, preferredStyle: UIAlertControllerStyle.Alert)
-            errorMessage.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.Default, handler: nil))
-            self.presentViewController(errorMessage, animated: true, completion: nil)
+            showAlert(error.localizedDescription)
         }
         
         myMap.addAnnotations(fetchedResultsControllerPin.fetchedObjects as! [MKAnnotation])
@@ -43,10 +41,8 @@ class MapViewController: UIViewController, NSFetchedResultsControllerDelegate, M
         // fetch previous map location
         do {
             try fetchedResultsControllerMapLocation.performFetch()
-        } catch let error1 as NSError {
-            let errorMessage = UIAlertController(title: nil, message: error1.localizedDescription, preferredStyle: UIAlertControllerStyle.Alert)
-            errorMessage.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.Default, handler: nil))
-            self.presentViewController(errorMessage, animated: true, completion: nil)
+        } catch let error as NSError {
+            showAlert(error.localizedDescription)
         }
         // set map Region to stored values, if no mapLocation stored yet, create one
         let mapLocation = fetchedResultsControllerMapLocation.fetchedObjects as! [MapLocation]
@@ -57,6 +53,7 @@ class MapViewController: UIViewController, NSFetchedResultsControllerDelegate, M
             CoreDataStackManager.sharedInstance().saveContext()
         }
     }
+    
     @IBAction func editPins(sender: UIBarButtonItem) {
         if sender.title == "Done" {
             sender.title = "Edit"
@@ -94,10 +91,32 @@ class MapViewController: UIViewController, NSFetchedResultsControllerDelegate, M
     
     //if annotation got selected do the segue to the album
     func mapView(mapView: MKMapView, didSelectAnnotationView view: MKAnnotationView) {
-        performSegueWithIdentifier("showAlbum", sender: view.annotation)
+        if deleteInformation.hidden == true {
+            performSegueWithIdentifier("showAlbum", sender: view.annotation)
+        } else {
+            sharedContext.deleteObject(view.annotation as! Pin)
+        }
+    }
+    
+    func preLoadImageSet(pin: Pin) {
+        FlickRClient().searchPhotosByLocation(pin.getBoundingBoxString(), requiredPhotosCount: 21) { result, error in
+            if let images = result {
+                for a in images {
+                    dispatch_async(dispatch_get_main_queue()) {
+                        _ = Photo(dictionary: [Photo.Keys.Name: a[0], Photo.Keys.Path: a[1], Photo.Keys.Pin: pin], context: self.sharedContext)
+                        CoreDataStackManager.sharedInstance().saveContext()
+                    }
+                }
+            }
+        }
     }
     
     @IBAction func gesturePressMap(sender: UILongPressGestureRecognizer) {
+        
+        if deleteInformation.hidden == false {
+            showAlert("Please exit Editmode to place new pins")
+            return
+        }
         
         let mapCoordinates: CLLocationCoordinate2D = myMap.convertPoint(sender.locationInView(myMap), toCoordinateFromView: myMap)
         
@@ -118,7 +137,9 @@ class MapViewController: UIViewController, NSFetchedResultsControllerDelegate, M
         // released, we are good to store the pin now
         case .Ended:
             CoreDataStackManager.sharedInstance().saveContext()
-            performSegueWithIdentifier("showAlbum", sender: droppedPin)
+            // load imageset already if new pin got set
+            preLoadImageSet(droppedPin!)
+            //performSegueWithIdentifier("showAlbum", sender: droppedPin)
             
         default:
             return
@@ -165,6 +186,12 @@ class MapViewController: UIViewController, NSFetchedResultsControllerDelegate, M
                 // no use case at the moment on MapViewController, at the moment
             }
         }
+    }
+    
+    func showAlert(message: String) {
+        let messageForAlert = UIAlertController(title: nil, message: message, preferredStyle: UIAlertControllerStyle.Alert)
+        messageForAlert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.Default, handler: nil))
+        self.presentViewController(messageForAlert, animated: true, completion: nil)
     }
     
 }

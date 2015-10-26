@@ -39,16 +39,26 @@ class Photo: NSManagedObject {
         super.init(entity: entity, insertIntoManagedObjectContext: context)
         // Dictionary
         name = dictionary[Keys.Name] as! String
-        path = dictionary[Keys.Path] as! String
+        path = dictionary[Keys.Path] as? String
         
         if dictionary[Keys.Pin] != nil {
             pin = dictionary[Keys.Pin] as! Pin
         }
     }
     
+    //setting image to nil will remove it
+    override func delete(sender: AnyObject?) {
+        super.delete(sender)
+        self.image = nil
+    }
+    
     var imageIdentifier: String {
         get {
-            return NSURL(fileURLWithPath: path!).lastPathComponent!
+            if path == nil {
+                return ""
+            } else {
+                return NSURL(fileURLWithPath: path!).lastPathComponent!
+            }
         }
     }
     
@@ -59,7 +69,7 @@ class Photo: NSManagedObject {
         }
         set {
             FlickRClient.Caches.imageCache.storeImage(newValue, withIdentifier: imageIdentifier)
-            print("Image at URL " + self.path! + " stored as " + self.imageIdentifier)
+            //print("Image at URL " + self.path! + " stored as " + self.imageIdentifier)
             //imageData = UIImagePNGRepresentation(image!)!
         }
     }

@@ -21,7 +21,7 @@ extension FlickRClient {
             randomNumber = Int(arc4random_uniform(UInt32((number as? Int)!)))
         }
         if let takenArray = alreadyTaken {
-            while takenArray.contains(randomNumber) {
+            while takenArray.contains(randomNumber) && takenArray.count < randomNumber {
                 randomNumber = parseForRandom(number, alreadyTaken: takenArray)
             }
         }
@@ -65,7 +65,7 @@ extension FlickRClient {
                                     var imageCollection = [[String]]()
                                     var alreadyTaken = [Int]()
                                     if let photos = results["photo"] as? [[String: AnyObject]] {
-                                        for _ in 0 ..< requiredPhotosCount {
+                                        for _ in 0 ..< ((photos.count > requiredPhotosCount) ?requiredPhotosCount:photos.count) {
                                             let currentIndex = self.parseForRandom(photos.count, alreadyTaken: alreadyTaken)
                                             alreadyTaken.append(currentIndex)
                                             var chosenPicture = photos[currentIndex] as [String: AnyObject]

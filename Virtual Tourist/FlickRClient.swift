@@ -63,13 +63,15 @@ class FlickRClient : NSObject {
     
     /* Helper: Given a response with error, see if a status_message is returned, otherwise return the previous error */
     class func errorForData(data: NSData?, response: NSURLResponse?, error: NSError) -> NSError {
-        
-        var parsedResult: AnyObject
+        if data == nil {
+            return NSError(domain: "No data received", code: 1, userInfo: [NSLocalizedDescriptionKey: "No data received"])
+        }
         
         do {
-            try parsedResult = NSJSONSerialization.JSONObjectWithData(data!, options: NSJSONReadingOptions.AllowFragments)
+            _ = try NSJSONSerialization.JSONObjectWithData(data!, options: NSJSONReadingOptions.AllowFragments)
         } catch let error as NSError {
             // TODO - do something here, figure out later, how to work with errors from FlickR API
+            print(error.localizedDescription)
         }
         /*
         if let parsedResult = NSJSONSerialization.JSONObjectWithData(data!, options: NSJSONReadingOptions.AllowFragments, error: nil) as? [String : AnyObject] {

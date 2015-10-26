@@ -14,19 +14,19 @@ class AlbumCollectionViewCell: UICollectionViewCell {
     @IBOutlet weak var loadIndicator: UIActivityIndicatorView!
     
     var taskToCancelifCellIsReused: NSURLSessionTask? {
-        
         didSet {
             if let taskToCancel = oldValue {
                 taskToCancel.cancel()
             }
         }
     }
-    /*
+    
     override func prepareForReuse() {
         super.prepareForReuse()
         if image.image == nil {
             loadIndicator.startAnimating()
+        } else {
+            loadIndicator.stopAnimating()
         }
     }
-*/
 }
